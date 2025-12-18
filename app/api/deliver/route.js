@@ -47,6 +47,23 @@ export async function OPTIONS(req) {
 /**
  * HELPERS
  */
+
+function toWinAnsiSafe(s) {
+  return String(s ?? "")
+    // common unicode punctuation -> ASCII
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/—/g, "-")
+    .replace(/–/g, "-")
+    .replace(/…/g, "...")
+    // arrows/symbols
+    .replace(/→/g, "->")
+    .replace(/←/g, "<-")
+    .replace(/•/g, "*")
+    // kill anything else outside basic Latin
+    .replace(/[^\x00-\x7F]/g, "");
+}
+
 function emailOk(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || "");
 }
@@ -59,7 +76,7 @@ function escapeText(s) {
 }
 
 function wrapLines(text, max = 92) {
-  const words = text.split(/\s+/);
+  const words = toWinAnsiSafe(text).split(/\s+/);
   const lines = [];
   let line = "";
   for (const w of words) {
@@ -98,7 +115,7 @@ async function buildResultsPdf(result) {
 
   const line = (txt, f = font, size = 11, gap = 16) => {
     if (y < 70) newPage();
-    page.drawText(escapeText(txt), { x: left, y, size, font: f });
+    page.drawText(toWinAnsiSafe(escapeText(txt)), { x: left, y, size, font: f });
     y -= gap;
   };
 
