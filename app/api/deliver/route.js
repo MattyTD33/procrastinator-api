@@ -170,6 +170,10 @@ export async function POST(req) {
 
   try {
     const { email, deliveryOption, responses } = await req.json();
+    const safeResponses = Array.isArray(responses)
+  ? responses.map(v => (v === null || v === undefined) ? "" : String(v))
+  : [];
+
 
     if (!emailOk(email)) {
       return NextResponse.json(
@@ -189,7 +193,8 @@ export async function POST(req) {
     const a = await fetch(ANALYSE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ responses }),
+      body: JSON.stringify({ responses: safeResponses }),
+
     });
 
     const result = JSON.parse(await a.text());
