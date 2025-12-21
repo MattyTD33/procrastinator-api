@@ -175,9 +175,21 @@ async function sendMandrill({ to, subject, html, attachments }) {
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Mandrill error: ${err}`);
+    throw new Error(`Mandrill HTTP error: ${err}`);
+  }
+
+  const data = await res.json();
+  console.log("Mandrill response:", JSON.stringify(data));
+
+  const first = Array.isArray(data) ? data[0] : null;
+
+  if (!first || !["sent", "queued", "scheduled"].includes(first.status)) {
+    throw new Error(
+      `Mandrill rejected: ${JSON.stringify(first)}`
+    );
   }
 }
+
 
 /**
  * POST
